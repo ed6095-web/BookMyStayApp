@@ -11,6 +11,8 @@
  * @author Eashan
  * @version 1.0
  */
+import java.util.HashMap;
+import java.util.Map;
 // UC2 - Abstract Room Class
 abstract class Room {
 
@@ -73,22 +75,25 @@ public class BookMyStayApp {
             Room doubleRoom = new DoubleRoom();
             Room suite = new SuiteRoom();
 
-            int singleRoomAvailability = 5;
-            int doubleRoomAvailability = 3;
-            int suiteRoomAvailability = 2;
+        // UC3 - Centralized Room Inventory
+        Map<String, Integer> roomInventory = new HashMap<>();
 
-            System.out.println("\n--- Room Details ---\n");
+        roomInventory.put("Single Room", 5);
+        roomInventory.put("Double Room", 3);
+        roomInventory.put("Suite Room", 2);
+        System.out.println("\n--- Room Details ---\n");
 
-            single.displayRoomDetails();
-            System.out.println("Available Rooms: " + singleRoomAvailability);
-            System.out.println();
+        single.displayRoomDetails();
+        System.out.println("Available Rooms: " + roomInventory.get("Single Room"));
+        System.out.println();
 
-            doubleRoom.displayRoomDetails();
-            System.out.println("Available Rooms: " + doubleRoomAvailability);
-            System.out.println();
+        doubleRoom.displayRoomDetails();
+        System.out.println("Available Rooms: " + roomInventory.get("Double Room"));
+        System.out.println();
 
-            suite.displayRoomDetails();
-            System.out.println("Available Rooms: " + suiteRoomAvailability);
+        suite.displayRoomDetails();
+        System.out.println("Available Rooms: " + roomInventory.get("Suite Room"));
+
 
 
     }
