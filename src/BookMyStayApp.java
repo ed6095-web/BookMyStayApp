@@ -14,6 +14,8 @@
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Queue;
+import java.util.LinkedList;
 // UC2 - Abstract Room Class
 abstract class Room {
 
@@ -52,6 +54,21 @@ class DoubleRoom extends Room {
 class SuiteRoom extends Room {
     public SuiteRoom() {
         super("Suite Room", 3, 500, 300.0);
+    }
+}
+// UC5 - Reservation Class
+class Reservation {
+
+    String guestName;
+    String roomType;
+
+    public Reservation(String guestName, String roomType) {
+        this.guestName = guestName;
+        this.roomType = roomType;
+    }
+
+    public void displayReservation() {
+        System.out.println("Guest: " + guestName + " | Requested Room: " + roomType);
     }
 }
 public class BookMyStayApp {
@@ -132,7 +149,32 @@ public class BookMyStayApp {
             System.out.println("Invalid room type entered.");
         }
 
-        scanner.close();
+// UC5 - Booking Request Queue (First-Come-First-Served)
+
+        Queue<Reservation> bookingQueue = new LinkedList<>();
+
+        System.out.println("\n===== BOOKING REQUEST =====");
+
+        System.out.print("Enter guest name: ");
+        String guestName = scanner.nextLine();
+
+        System.out.print("Enter room type to book: ");
+        String roomType = scanner.nextLine();
+
+// Create reservation request
+        Reservation reservation = new Reservation(guestName, roomType);
+
+// Add request to queue
+        bookingQueue.add(reservation);
+
+        System.out.println("\nBooking request added to queue successfully!");
+
+        System.out.println("\n--- Current Booking Queue ---");
+
+// Display queued requests
+        for (Reservation r : bookingQueue) {
+            r.displayReservation();
+        }
 
     }
 }
