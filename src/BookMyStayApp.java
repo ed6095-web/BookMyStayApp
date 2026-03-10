@@ -13,6 +13,7 @@
  */
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 // UC2 - Abstract Room Class
 abstract class Room {
 
@@ -94,7 +95,44 @@ public class BookMyStayApp {
         suite.displayRoomDetails();
         System.out.println("Available Rooms: " + roomInventory.get("Suite Room"));
 
+// UC4 - Room Search & Availability Check
 
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("\n===== ROOM SEARCH =====");
+        System.out.print("Enter room type to search (Single Room / Double Room / Suite Room): ");
+
+        String searchRoom = scanner.nextLine();
+
+        System.out.println("\n--- Search Result ---\n");
+
+// Check if room exists in inventory
+        if (roomInventory.containsKey(searchRoom)) {
+
+            int available = roomInventory.get(searchRoom);
+
+            // Show only rooms with availability > 0
+            if (available > 0) {
+
+                if (searchRoom.equalsIgnoreCase("Single Room")) {
+                    single.displayRoomDetails();
+                } else if (searchRoom.equalsIgnoreCase("Double Room")) {
+                    doubleRoom.displayRoomDetails();
+                } else if (searchRoom.equalsIgnoreCase("Suite Room")) {
+                    suite.displayRoomDetails();
+                }
+
+                System.out.println("Available Rooms: " + available);
+
+            } else {
+                System.out.println("Sorry! No rooms available for " + searchRoom);
+            }
+
+        } else {
+            System.out.println("Invalid room type entered.");
+        }
+
+        scanner.close();
 
     }
 }
