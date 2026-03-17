@@ -90,6 +90,12 @@ class AddOnService {
         System.out.println(serviceName + " - $" + price);
     }
 }
+// UC9 - Custom Exception for Invalid Booking
+class InvalidBookingException extends Exception {
+    public InvalidBookingException(String message) {
+        super(message);
+    }
+}
 public class BookMyStayApp {
 
     /**
@@ -211,13 +217,21 @@ public class BookMyStayApp {
 // Process booking queue
         while (!bookingQueue.isEmpty()) {
 
-            Reservation request = bookingQueue.poll(); // FIFO removal
-            String requestedRoom = request.roomType;
+            try {
 
-            System.out.println("\nProcessing booking for: " + request.guestName);
+                Reservation request = bookingQueue.poll();
+                String requestedRoom = request.roomType;
 
-            // Check inventory availability
-            if (roomInventory.get(requestedRoom) > 0) {
+                System.out.println("\nProcessing booking for: " + request.guestName);
+
+                // UC9 Validation
+                if (!roomInventory.containsKey(requestedRoom)) {
+                    throw new InvalidBookingException("Invalid room type selected: " + requestedRoom);
+                }
+
+                if (roomInventory.get(requestedRoom) <= 0) {
+                    throw new InvalidBookingException("No rooms available for: " + requestedRoom);
+                }
 
                 String roomID = requestedRoom.replace(" ", "") + "-" +
                         (allocatedRooms.get(requestedRoom).size() + 1);
@@ -230,10 +244,10 @@ public class BookMyStayApp {
                 System.out.println("Room Type: " + requestedRoom);
                 System.out.println("Allocated Room ID: " + roomID);
 
-                // UC8 - Save confirmed booking to history
+                // UC8
                 bookingHistory.add(request);
 
-                // ===== UC7 STARTS HERE =====
+                // ===== UC7 =====
                 System.out.println("\n===== ADD-ON SERVICE SELECTION =====");
 
                 Map<String, List<AddOnService>> reservationServices = new HashMap<>();
@@ -276,10 +290,8 @@ public class BookMyStayApp {
                     }
                 }
 
-                // Store services for reservation
                 reservationServices.put(reservationID, selectedServices);
 
-                // Calculate total cost
                 double totalCost = 0;
 
                 System.out.println("\nSelected Services:");
@@ -291,12 +303,17 @@ public class BookMyStayApp {
 
                 System.out.println("Total Add-On Cost: $" + totalCost);
 
-            } else {
+            } catch (InvalidBookingException e) {
 
-                System.out.println("Reservation Failed! No available rooms for " + requestedRoom);
+                System.out.println("Booking Failed: " + e.getMessage());
+
+            } catch (Exception e) {
+
+                System.out.println("Unexpected Error: " + e.getMessage());
 
             }
         }
+
 
 // ===== UC8 - Booking History Report =====
         System.out.println("\n===== BOOKING HISTORY REPORT =====");
