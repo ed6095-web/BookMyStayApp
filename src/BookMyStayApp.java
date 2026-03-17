@@ -97,6 +97,74 @@ class InvalidBookingException extends Exception {
         super(message);
     }
 }
+// UC11 - Concurrent Booking Processor
+class BookingProcessor extends Thread {
+
+    private Queue<Reservation> bookingQueue;
+    private Map<String, Integer> roomInventory;
+    private Map<String, Set<String>> allocatedRooms;
+
+    public BookingProcessor(Queue<Reservation> bookingQueue,
+                            Map<String, Integer> roomInventory,
+                            Map<String, Set<String>> allocatedRooms) {
+        this.bookingQueue = bookingQueue;
+        this.roomInventory = roomInventory;
+        this.allocatedRooms = allocatedRooms;
+    }
+
+    @Override
+    public void run() {
+
+        while (true) {
+
+            Reservation request;
+
+            synchronized (bookingQueue) {
+
+                if (bookingQueue.isEmpty()) {
+                    break;
+                }
+
+                request = bookingQueue.poll();
+            }
+
+            processBooking(request);
+        }
+    }
+
+    private void processBooking(Reservation request) {
+
+        synchronized (roomInventory) {
+
+            String requestedRoom = request.roomType;
+
+            System.out.println(Thread.currentThread().getName()
+                    + " processing " + request.guestName);
+
+            if (!roomInventory.containsKey(requestedRoom)) {
+                System.out.println("Invalid room type for " + request.guestName);
+                return;
+            }
+
+            if (roomInventory.get(requestedRoom) <= 0) {
+                System.out.println("No rooms available for " + request.guestName);
+                return;
+            }
+
+            String roomID = requestedRoom.replace(" ", "") + "-"
+                    + (allocatedRooms.get(requestedRoom).size() + 1);
+
+            allocatedRooms.get(requestedRoom).add(roomID);
+            roomInventory.put(requestedRoom,
+                    roomInventory.get(requestedRoom) - 1);
+
+            System.out.println("Booking Confirmed for "
+                    + request.guestName
+                    + " | Room: " + requestedRoom
+                    + " | Room ID: " + roomID);
+        }
+    }
+}
 public class BookMyStayApp {
 
     /**
@@ -384,6 +452,26 @@ public class BookMyStayApp {
             }
 
             System.out.println("Total Confirmed Bookings: " + bookingHistory.size());
+            // ===== UC11 - CONCURRENT BOOKING SIMULATION =====
+            System.out.println("\n===== CONCURRENT BOOKING SIMULATION =====");
+
+// New queue for concurrency test
+            Queue<Reservation> concurrentQueue = new LinkedList<>();
+
+            concurrentQueue.add(new Reservation("Alice", "Single Room"));
+            concurrentQueue.add(new Reservation("Bob", "Single Room"));
+            concurrentQueue.add(new Reservation("Charlie", "Single Room"));
+            concurrentQueue.add(new Reservation("David", "Double Room"));
+            concurrentQueue.add(new Reservation("Eve", "Double Room"));
+
+// Threads
+            Thread t1 = new BookingProcessor(concurrentQueue, roomInventory, allocatedRooms);
+            Thread t2 = new BookingProcessor(concurrentQueue, roomInventory, allocatedRooms);
+            Thread t3 = new BookingProcessor(concurrentQueue, roomInventory, allocatedRooms);
+
+            t1.start();
+            t2.start();
+            t3.start();
 
         }
     }
