@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Stack;
 // UC2 - Abstract Room Class
 abstract class Room {
 
@@ -213,6 +214,11 @@ public class BookMyStayApp {
 
 // UC8 - Booking History Storage
         List<Reservation> bookingHistory = new ArrayList<>();
+        // UC10 - Track reservation to room ID
+        Map<String, String> reservationRoomMap = new HashMap<>();
+
+// UC10 - Stack for rollback (LIFO)
+        Stack<String> rollbackStack = new Stack<>();
 
 // Process booking queue
         while (!bookingQueue.isEmpty()) {
@@ -243,6 +249,13 @@ public class BookMyStayApp {
                 System.out.println("Guest: " + request.guestName);
                 System.out.println("Room Type: " + requestedRoom);
                 System.out.println("Allocated Room ID: " + roomID);
+                // UC10 - Store mapping and push to stack
+                String reservationIDGenerated = request.guestName + "-" + (allocatedRooms.get(requestedRoom).size());
+
+                reservationRoomMap.put(reservationIDGenerated, requestedRoom + ":" + roomID);
+                rollbackStack.push(reservationIDGenerated);
+
+                System.out.println("Reservation ID: " + reservationIDGenerated);
 
                 // UC8
                 bookingHistory.add(request);
@@ -270,6 +283,7 @@ public class BookMyStayApp {
 
                     System.out.print("Enter service number: ");
                     int choice = scanner.nextInt();
+                    scanner.nextLine();
 
                     switch (choice) {
 
@@ -314,7 +328,50 @@ public class BookMyStayApp {
             }
         }
 
+// ===== UC10 - BOOKING CANCELLATION =====
+        System.out.println("\n===== BOOKING CANCELLATION =====");
 
+        System.out.print("Enter Reservation ID to cancel: ");
+        String cancelID = scanner.nextLine();
+
+// Validate reservation
+        if (!reservationRoomMap.containsKey(cancelID)) {
+
+            System.out.println("Cancellation Failed: Invalid Reservation ID");
+
+        } else {
+
+            String lastReservation = rollbackStack.peek();
+
+            if (!lastReservation.equals(cancelID)) {
+                System.out.println("Cancellation Failed: Only latest booking can be cancelled (LIFO)");
+            } else {
+
+                rollbackStack.pop();
+
+                String details = reservationRoomMap.get(cancelID);
+                String[] parts = details.split(":");
+
+                String roomTypeCancelled = parts[0];
+                String roomIDCancelled = parts[1];
+
+                // Restore inventory
+                roomInventory.put(roomTypeCancelled,
+                        roomInventory.get(roomTypeCancelled) + 1);
+
+                // Remove allocated room
+                allocatedRooms.get(roomTypeCancelled).remove(roomIDCancelled);
+
+                // Remove from map
+                reservationRoomMap.remove(cancelID);
+
+                // Remove from booking history
+                bookingHistory.removeIf(r -> r.guestName.equals(cancelID.split("-")[0]));
+
+                System.out.println("Cancellation Successful!");
+                System.out.println("Room Released: " + roomIDCancelled);
+            }
+        }
 // ===== UC8 - Booking History Report =====
         System.out.println("\n===== BOOKING HISTORY REPORT =====");
 
@@ -327,6 +384,7 @@ public class BookMyStayApp {
             }
 
             System.out.println("Total Confirmed Bookings: " + bookingHistory.size());
+
         }
     }
 }
