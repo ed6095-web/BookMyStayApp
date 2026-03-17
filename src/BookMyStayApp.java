@@ -62,7 +62,7 @@ class SuiteRoom extends Room {
     }
 }
 // UC5 - Reservation Class
-class Reservation {
+class Reservation implements java.io.Serializable {
 
     String guestName;
     String roomType;
@@ -77,7 +77,7 @@ class Reservation {
     }
 }
 // UC7 - Add-On Service Class
-class AddOnService {
+class AddOnService implements java.io.Serializable {
 
     String serviceName;
     double price;
@@ -167,6 +167,7 @@ class BookingProcessor extends Thread {
 }
 public class BookMyStayApp {
 
+    private static final String DATA_FILE = "booking_data.ser";
     /**
      * Main method - Entry point of the Java application.
      * JVM begins execution from this method.
@@ -190,9 +191,32 @@ public class BookMyStayApp {
         // UC3 - Centralized Room Inventory
         Map<String, Integer> roomInventory = new HashMap<>();
 
-        roomInventory.put("Single Room", 5);
-        roomInventory.put("Double Room", 3);
-        roomInventory.put("Suite Room", 2);
+// ===== UC12 - LOAD DATA =====
+        try {
+            java.io.File file = new java.io.File(DATA_FILE);
+
+            if (file.exists()) {
+                java.io.ObjectInputStream ois = new java.io.ObjectInputStream(
+                        new java.io.FileInputStream(file));
+
+                roomInventory = (Map<String, Integer>) ois.readObject();
+                ois.close();
+
+                System.out.println("Previous data loaded successfully!");
+
+            } else {
+                roomInventory.put("Single Room", 5);
+                roomInventory.put("Double Room", 3);
+                roomInventory.put("Suite Room", 2);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error loading data. Starting fresh.");
+
+            roomInventory.put("Single Room", 5);
+            roomInventory.put("Double Room", 3);
+            roomInventory.put("Suite Room", 2);
+        }
         System.out.println("\n--- Room Details ---\n");
 
         single.displayRoomDetails();
@@ -472,6 +496,27 @@ public class BookMyStayApp {
             t1.start();
             t2.start();
             t3.start();
+
+            try {
+                t1.join();
+                t2.join();
+                t3.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            // ===== UC12 - SAVE DATA =====
+            try {
+                java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(
+                        new java.io.FileOutputStream(DATA_FILE));
+
+                oos.writeObject(roomInventory);
+                oos.close();
+
+                System.out.println("\nData saved successfully!");
+
+            } catch (Exception e) {
+                System.out.println("Error saving data: " + e.getMessage());
+            }
 
         }
     }
