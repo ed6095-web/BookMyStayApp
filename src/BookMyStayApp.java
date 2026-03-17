@@ -100,17 +100,17 @@ public class BookMyStayApp {
      */
     public static void main(String[] args) {
 
-            // UC1
-            System.out.println("=====================================");
-            System.out.println("        BOOK MY STAY APPLICATION");
-            System.out.println("        Hotel Booking System v2.1");
-            System.out.println("=====================================");
-            System.out.println("Welcome! Application started successfully.");
+        // UC1
+        System.out.println("=====================================");
+        System.out.println("        BOOK MY STAY APPLICATION");
+        System.out.println("        Hotel Booking System v2.1");
+        System.out.println("=====================================");
+        System.out.println("Welcome! Application started successfully.");
 
-            // UC2 - Initialize Room Objects
-            Room single = new SingleRoom();
-            Room doubleRoom = new DoubleRoom();
-            Room suite = new SuiteRoom();
+        // UC2 - Initialize Room Objects
+        Room single = new SingleRoom();
+        Room doubleRoom = new DoubleRoom();
+        Room suite = new SuiteRoom();
 
         // UC3 - Centralized Room Inventory
         Map<String, Integer> roomInventory = new HashMap<>();
@@ -194,107 +194,122 @@ public class BookMyStayApp {
         for (Reservation r : bookingQueue) {
             r.displayReservation();
         }
-                // UC6 - Reservation Confirmation & Room Allocation
+        // UC6 - Reservation Confirmation & Room Allocation
 
-                System.out.println("\n===== RESERVATION CONFIRMATION =====");
+        System.out.println("\n===== RESERVATION CONFIRMATION =====");
 
 // Map room types to allocated room IDs
-                Map<String, Set<String>> allocatedRooms = new HashMap<>();
+        Map<String, Set<String>> allocatedRooms = new HashMap<>();
 
-                allocatedRooms.put("Single Room", new HashSet<>());
-                allocatedRooms.put("Double Room", new HashSet<>());
-                allocatedRooms.put("Suite Room", new HashSet<>());
+        allocatedRooms.put("Single Room", new HashSet<>());
+        allocatedRooms.put("Double Room", new HashSet<>());
+        allocatedRooms.put("Suite Room", new HashSet<>());
+
+// UC8 - Booking History Storage
+        List<Reservation> bookingHistory = new ArrayList<>();
 
 // Process booking queue
-                while (!bookingQueue.isEmpty()) {
+        while (!bookingQueue.isEmpty()) {
 
-                    Reservation request = bookingQueue.poll(); // FIFO removal
-                    String requestedRoom = request.roomType;
+            Reservation request = bookingQueue.poll(); // FIFO removal
+            String requestedRoom = request.roomType;
 
-                    System.out.println("\nProcessing booking for: " + request.guestName);
+            System.out.println("\nProcessing booking for: " + request.guestName);
 
-                    // Check inventory availability
-                    if (roomInventory.get(requestedRoom) > 0) {
+            // Check inventory availability
+            if (roomInventory.get(requestedRoom) > 0) {
 
-                        String roomID = requestedRoom.replace(" ", "") + "-" +
-                                (allocatedRooms.get(requestedRoom).size() + 1);
+                String roomID = requestedRoom.replace(" ", "") + "-" +
+                        (allocatedRooms.get(requestedRoom).size() + 1);
 
-                        allocatedRooms.get(requestedRoom).add(roomID);
-                        roomInventory.put(requestedRoom, roomInventory.get(requestedRoom) - 1);
+                allocatedRooms.get(requestedRoom).add(roomID);
+                roomInventory.put(requestedRoom, roomInventory.get(requestedRoom) - 1);
 
-                        System.out.println("Reservation Confirmed!");
-                        System.out.println("Guest: " + request.guestName);
-                        System.out.println("Room Type: " + requestedRoom);
-                        System.out.println("Allocated Room ID: " + roomID);
-                    }
+                System.out.println("Reservation Confirmed!");
+                System.out.println("Guest: " + request.guestName);
+                System.out.println("Room Type: " + requestedRoom);
+                System.out.println("Allocated Room ID: " + roomID);
 
-                     else {
+                // UC8 - Save confirmed booking to history
+                bookingHistory.add(request);
 
-                        System.out.println("Reservation Failed! No available rooms for " + requestedRoom);
+                // ===== UC7 STARTS HERE =====
+                System.out.println("\n===== ADD-ON SERVICE SELECTION =====");
 
-                    }
+                Map<String, List<AddOnService>> reservationServices = new HashMap<>();
 
-// UC7 STARTS HERE (outside if-else)
+                System.out.print("Enter Reservation ID to add services: ");
+                String reservationID = scanner.nextLine();
 
-                        System.out.println("\n===== ADD-ON SERVICE SELECTION =====");
+                List<AddOnService> selectedServices = new ArrayList<>();
 
-// Map reservation ID to selected services
-                        // Map reservation ID to selected services
-                        Map<String, List<AddOnService>> reservationServices = new HashMap<>();
+                System.out.println("Available Services:");
+                System.out.println("1. Breakfast ($20)");
+                System.out.println("2. Airport Pickup ($40)");
+                System.out.println("3. Extra Bed ($30)");
 
-                        System.out.print("Enter Reservation ID to add services: ");
-                        String reservationID = scanner.nextLine();
-// Create list for selected services
-                        List<AddOnService> selectedServices = new ArrayList<>();
+                System.out.print("Select number of services to add: ");
+                int count = scanner.nextInt();
+                scanner.nextLine();
 
-                        System.out.println("Available Services:");
-                        System.out.println("1. Breakfast ($20)");
-                        System.out.println("2. Airport Pickup ($40)");
-                        System.out.println("3. Extra Bed ($30)");
+                for (int i = 0; i < count; i++) {
 
-                        System.out.print("Select number of services to add: ");
-                        int count = scanner.nextInt();
-                        scanner.nextLine();
+                    System.out.print("Enter service number: ");
+                    int choice = scanner.nextInt();
 
-                        for (int i = 0; i < count; i++) {
+                    switch (choice) {
 
-                            System.out.print("Enter service number: ");
-                            int choice = scanner.nextInt();
+                        case 1:
+                            selectedServices.add(new AddOnService("Breakfast", 20));
+                            break;
 
-                            switch (choice) {
+                        case 2:
+                            selectedServices.add(new AddOnService("Airport Pickup", 40));
+                            break;
 
-                                case 1:
-                                    selectedServices.add(new AddOnService("Breakfast", 20));
-                                    break;
+                        case 3:
+                            selectedServices.add(new AddOnService("Extra Bed", 30));
+                            break;
 
-                                case 2:
-                                    selectedServices.add(new AddOnService("Airport Pickup", 40));
-                                    break;
-
-                                case 3:
-                                    selectedServices.add(new AddOnService("Extra Bed", 30));
-                                    break;
-
-                                default:
-                                    System.out.println("Invalid service.");
-                            }
-                        }
-
-// Store services for reservation
-                        reservationServices.put(reservationID, selectedServices);
-
-// Calculate total cost
-                        double totalCost = 0;
-
-                        System.out.println("\nSelected Services:");
-
-                        for (AddOnService service : selectedServices) {
-                            service.displayService();
-                            totalCost += service.price;
-                        }
-
-                        System.out.println("Total Add-On Cost: $" + totalCost);
+                        default:
+                            System.out.println("Invalid service.");
                     }
                 }
+
+                // Store services for reservation
+                reservationServices.put(reservationID, selectedServices);
+
+                // Calculate total cost
+                double totalCost = 0;
+
+                System.out.println("\nSelected Services:");
+
+                for (AddOnService service : selectedServices) {
+                    service.displayService();
+                    totalCost += service.price;
+                }
+
+                System.out.println("Total Add-On Cost: $" + totalCost);
+
+            } else {
+
+                System.out.println("Reservation Failed! No available rooms for " + requestedRoom);
+
+            }
+        }
+
+// ===== UC8 - Booking History Report =====
+        System.out.println("\n===== BOOKING HISTORY REPORT =====");
+
+        if (bookingHistory.isEmpty()) {
+            System.out.println("No confirmed bookings yet.");
+        } else {
+
+            for (Reservation r : bookingHistory) {
+                System.out.println("Guest: " + r.guestName + " | Room: " + r.roomType);
             }
 
+            System.out.println("Total Confirmed Bookings: " + bookingHistory.size());
+        }
+    }
+}
