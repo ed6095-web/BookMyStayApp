@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Queue;
 import java.util.LinkedList;
+import java.util.Set;
+import java.util.HashSet;
 // UC2 - Abstract Room Class
 abstract class Room {
 
@@ -172,9 +174,52 @@ public class BookMyStayApp {
         System.out.println("\n--- Current Booking Queue ---");
 
 // Display queued requests
+        System.out.println("\n--- Current Booking Queue ---");
+
+// Display queued requests
         for (Reservation r : bookingQueue) {
             r.displayReservation();
         }
+                // UC6 - Reservation Confirmation & Room Allocation
 
-    }
-}
+                System.out.println("\n===== RESERVATION CONFIRMATION =====");
+
+// Map room types to allocated room IDs
+                Map<String, Set<String>> allocatedRooms = new HashMap<>();
+
+                allocatedRooms.put("Single Room", new HashSet<>());
+                allocatedRooms.put("Double Room", new HashSet<>());
+                allocatedRooms.put("Suite Room", new HashSet<>());
+
+// Process booking queue
+                while (!bookingQueue.isEmpty()) {
+
+                    Reservation request = bookingQueue.poll(); // FIFO removal
+                    String requestedRoom = request.roomType;
+
+                    System.out.println("\nProcessing booking for: " + request.guestName);
+
+                    // Check inventory availability
+                    if (roomInventory.containsKey(requestedRoom) && roomInventory.get(requestedRoom) > 0) {
+
+                        // Generate unique room ID
+                        String roomID = requestedRoom.replace(" ", "") + "-" + (allocatedRooms.get(requestedRoom).size() + 1);
+
+                        // Store allocated room
+                        allocatedRooms.get(requestedRoom).add(roomID);
+
+                        // Update inventory immediately
+                        roomInventory.put(requestedRoom, roomInventory.get(requestedRoom) - 1);
+
+                        System.out.println("Reservation Confirmed!");
+                        System.out.println("Guest: " + request.guestName);
+                        System.out.println("Room Type: " + requestedRoom);
+                        System.out.println("Allocated Room ID: " + roomID);
+
+                    } else {
+
+                        System.out.println("Reservation Failed! No available rooms for " + requestedRoom);
+                    }
+                }
+            }
+        }
