@@ -18,6 +18,8 @@ import java.util.Queue;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
 // UC2 - Abstract Room Class
 abstract class Room {
 
@@ -71,6 +73,21 @@ class Reservation {
 
     public void displayReservation() {
         System.out.println("Guest: " + guestName + " | Requested Room: " + roomType);
+    }
+}
+// UC7 - Add-On Service Class
+class AddOnService {
+
+    String serviceName;
+    double price;
+
+    public AddOnService(String serviceName, double price) {
+        this.serviceName = serviceName;
+        this.price = price;
+    }
+
+    public void displayService() {
+        System.out.println(serviceName + " - $" + price);
     }
 }
 public class BookMyStayApp {
@@ -174,9 +191,6 @@ public class BookMyStayApp {
         System.out.println("\n--- Current Booking Queue ---");
 
 // Display queued requests
-        System.out.println("\n--- Current Booking Queue ---");
-
-// Display queued requests
         for (Reservation r : bookingQueue) {
             r.displayReservation();
         }
@@ -200,26 +214,87 @@ public class BookMyStayApp {
                     System.out.println("\nProcessing booking for: " + request.guestName);
 
                     // Check inventory availability
-                    if (roomInventory.containsKey(requestedRoom) && roomInventory.get(requestedRoom) > 0) {
+                    if (roomInventory.get(requestedRoom) > 0) {
 
-                        // Generate unique room ID
-                        String roomID = requestedRoom.replace(" ", "") + "-" + (allocatedRooms.get(requestedRoom).size() + 1);
+                        String roomID = requestedRoom.replace(" ", "") + "-" +
+                                (allocatedRooms.get(requestedRoom).size() + 1);
 
-                        // Store allocated room
                         allocatedRooms.get(requestedRoom).add(roomID);
-
-                        // Update inventory immediately
                         roomInventory.put(requestedRoom, roomInventory.get(requestedRoom) - 1);
 
                         System.out.println("Reservation Confirmed!");
                         System.out.println("Guest: " + request.guestName);
                         System.out.println("Room Type: " + requestedRoom);
                         System.out.println("Allocated Room ID: " + roomID);
+                    }
 
-                    } else {
+                     else {
 
                         System.out.println("Reservation Failed! No available rooms for " + requestedRoom);
+
+                    }
+
+// UC7 STARTS HERE (outside if-else)
+
+                        System.out.println("\n===== ADD-ON SERVICE SELECTION =====");
+
+// Map reservation ID to selected services
+                        // Map reservation ID to selected services
+                        Map<String, List<AddOnService>> reservationServices = new HashMap<>();
+
+                        System.out.print("Enter Reservation ID to add services: ");
+                        String reservationID = scanner.nextLine();
+// Create list for selected services
+                        List<AddOnService> selectedServices = new ArrayList<>();
+
+                        System.out.println("Available Services:");
+                        System.out.println("1. Breakfast ($20)");
+                        System.out.println("2. Airport Pickup ($40)");
+                        System.out.println("3. Extra Bed ($30)");
+
+                        System.out.print("Select number of services to add: ");
+                        int count = scanner.nextInt();
+                        scanner.nextLine();
+
+                        for (int i = 0; i < count; i++) {
+
+                            System.out.print("Enter service number: ");
+                            int choice = scanner.nextInt();
+
+                            switch (choice) {
+
+                                case 1:
+                                    selectedServices.add(new AddOnService("Breakfast", 20));
+                                    break;
+
+                                case 2:
+                                    selectedServices.add(new AddOnService("Airport Pickup", 40));
+                                    break;
+
+                                case 3:
+                                    selectedServices.add(new AddOnService("Extra Bed", 30));
+                                    break;
+
+                                default:
+                                    System.out.println("Invalid service.");
+                            }
+                        }
+
+// Store services for reservation
+                        reservationServices.put(reservationID, selectedServices);
+
+// Calculate total cost
+                        double totalCost = 0;
+
+                        System.out.println("\nSelected Services:");
+
+                        for (AddOnService service : selectedServices) {
+                            service.displayService();
+                            totalCost += service.price;
+                        }
+
+                        System.out.println("Total Add-On Cost: $" + totalCost);
                     }
                 }
             }
-        }
+
